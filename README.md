@@ -91,16 +91,15 @@
 
 ```text
 <deliverable>/
-  01-xxx.md          正文
-  01-xxx.docx        文档产物
-  01-xxx.pdf         PDF产物
-  02-...
+  <deliverable>.md   正文
+  <deliverable>.docx 文档产物
+  <deliverable>.pdf  PDF产物
+  build-doc.py       文档生成脚本
   fig/
     01-xxx.drawio    图源文件
     01-xxx.png       位图产物
     01-xxx.svg       矢量产物
     make-figures.py  图的生成脚本
-  build-doc.py       文档生成脚本
 ```
 
 要点：
