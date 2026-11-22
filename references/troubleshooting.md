@@ -1,6 +1,6 @@
 # 工具故障经验
 
-按遇到的问题查阅。这里记录原工具环境中的故障与处理经验。历史版本记录不完整，应用前先核对当前条件。通用要求见[工程标准](../docs/agents/engineering.md)与[验证交付](../docs/agents/delivery.md)。
+按遇到的问题查阅。这里记录原工具环境中的故障与处理经验。历史版本记录不完整，应用前先核对当前条件。通用要求见[工程标准](../standards/engineering.md)与[验证交付](../standards/delivery.md)。
 
 ## 一、XML属性与导出挂起
 
