@@ -1,0 +1,13 @@
+docs: let the surface carry the settings, in the surface's own place
+
+The case record kept the first version of the settings design, which the user
+rejected: a miniature preview inside the settings panel. What replaced it is
+worth recording — the edit surface is the capture's own clone mounted over the
+conversation, the chrome piece table is the single list of what can be
+switched off, and a switched-off part stays in place, dimmed. Also notes the
+four mechanics that bit: rebuild on a revision counter rather than on the
+options object, cancel clicks inside the clone, mount the overlay on body, and
+layer it above the dialog layer but below the popup layer.
+
+The UI standard gains the same rule in general form, and a short paragraph on
+where an edit surface belongs and how the piece list has to be shared.
