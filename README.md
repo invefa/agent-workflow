@@ -32,6 +32,7 @@ agent-workflow（简称 AWF）为项目提供通用工作规范和可按需查�
 |---|---|
 | 程序设计、代码修复、配置或数据行为变更 | [工程标准](standards/engineering.md) |
 | 软件界面设计、控件选用或自定义控件 | [图形界面](standards/ui.md) |
+| 开发或修改 DeepSeek Harness 客户端插件的界面 | [会话截图案例](references/projects/chat-screenshot.md) |
 | 命令行语法、帮助、终端输出、TUI 或脚本接口 | [命令行工具](standards/cli.md) |
 | 文档、说明、命名或视觉表达 | [书写与组织](standards/writing.md) |
 | 建立长期项目、维护项目指令、记录或总结经验 | [项目维护](standards/project.md) |
