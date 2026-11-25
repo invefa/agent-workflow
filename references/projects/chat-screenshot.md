@@ -112,3 +112,20 @@
 - 剪枝与克隆配对：按子节点下标把活树与克隆配对的清理函数必须**先于**任何剪枝运行，否则下标错位，深层 `video`/`iframe` 漏删。
 - 打包产物带内容版本，运行中的宿主仍用旧字节：改完要让用户把插件关掉再打开并刷新。
 
+
+## 八、把一个有历史的仓库发布成独立仓库
+
+脱胎换骨的插件要公开时，历史会暴露来源。本地保留历史、远端只留一个提交的做法：
+
+```
+git checkout --orphan public        # 工作树与索引都保留，历史从头开始
+git add -A
+git commit -F .work/release-msg.txt # 一份写给陌生人的说明，不是 commit 日志合集
+git push https://x-access-token:<token>@github.com/<owner>/<repo>.git public:main
+git checkout master                 # 本地历史原地不动
+```
+
+- 令牌从 `git credential fill` 取，只放在变量里，命令输出用 `-replace` 抹掉再打印；不要写进 remote 配置。
+- `.gitignore` 里的临时目录（如 `.work/`）自动不进公开提交，但要先 `git ls-files` 数一遍，确认没有把草稿与附件带进去。
+- 公开分支留一个本地分支（`public`）当基线，下次发版 amend 或重建即可，master 继续攒真实历史。
+- README 要重写成读者视角：开篇讲它做什么，不讲它曾是什么；描述文件名、目录表、宿主组件取用方式都要按现状写，别留“以前的设置页”这类沿革句子。
