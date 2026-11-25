@@ -90,6 +90,11 @@
 
 第三个事故属于同一类"空白"：把 `describeElement()` 返回的对象直接当 React 子节点渲染，触发 error #31（objects are not valid as a React child），同样是整棵树消失。诊断方法是先加边界、把错误文本印在界面上，再读它——比在控制台里翻压缩后的栈快得多。
 
+### 目录按"读什么"分组，文件名不再重复目录
+
+编辑面原本是六个平铺的 `editor-labels.js` / `editor-inspector.js` / `editor-library.js`…，`dom/` 下同样挤了十二个互不相关的文件。分组的依据不是"看起来像"，而是它们各自读什么、产出什么：`dom/clone/` 放发生在副本上的一切（准备、规则、模板变量、内容块），`dom/transcript/` 放读会话本身的东西（轮次、分页、几何），`views/editor/` 放编辑面的各件；而 `dom/capture.js` 与 `dom/stage.js` 留在上层——它们同时调用两组，属于编排，不属于任何一组。
+
+一旦收进目录，文件名就去掉目录已经说清的前缀：`editor/inspector.js` 而不是 `editor-inspector.js`。移动只改路径时用脚本做（先移动文件、再按"新位置 → 旧位置"反查重写每个相对 import、最后改打包顺序数组），一次跑完仍然 `build.mjs --check` 通过、行数不变，就说明真的只动了路径。
 ## 六、验证
 
 - `node build.mjs --check`、`checks/structure.mjs`、`checks/i18n.mjs`、`checks/logic.mjs`：契约、文案表、纯函数。
@@ -106,3 +111,4 @@
 - `var(--dsw-alias-*)` 在活 DOM 里能解析，序列化进 SVG 文档后没有主题根；插入到图片里的块用字面色值，两条渲染路径才一致。
 - 剪枝与克隆配对：按子节点下标把活树与克隆配对的清理函数必须**先于**任何剪枝运行，否则下标错位，深层 `video`/`iframe` 漏删。
 - 打包产物带内容版本，运行中的宿主仍用旧字节：改完要让用户把插件关掉再打开并刷新。
+
