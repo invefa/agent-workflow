@@ -62,6 +62,10 @@
 - `checks/dom.html` + `checks/serve.mjs`：用宿主标记搭 fixture，模块图必须经 HTTP 加载（`file://` 下浏览器拒绝）。
 - 无头取结果：`msedge --headless=new --disable-gpu --user-data-dir=%TEMP%\cs-fixture --virtual-time-budget=9000 --dump-dom http://127.0.0.1:8712/checks/dom.html`，标题即 PASS/FAIL，逐条结果写在 `<pre id="report">` 与 `window.__verify`。
 - 不要用宿主的侧栏或内置浏览器验证本地页：面板拒绝 `127.0.0.1`，内置浏览器会为一个本地 fixture 常驻一条 Edge 进程链，关窗也杀不掉（`provider.close(session)` 只在会话关闭时释放，持有 tab 时每 1200ms 的引用泵会把进程拉回来）。顺序是先前 `reset_session`，再 `Stop-Process`。
+- 界面类的判断只能看着改：起一个真实实例比读代码可靠。`Start-Process node -ArgumentList '"<dsh>/lib/bin.js" web --port 7391 --no-open' -Environment @{ DSH_HOME = "<沙箱 home>" }`，把输出重定向到 `boot.log`，其中 `dsh web: http://127.0.0.1:7391/?token=...` 就是要打开的地址。**不传 `-Environment` 时它静默使用真实的 `~/.dsh`**，于是看到的全是用户的真实会话，而插件来自用户自己的 profile——很容易误判成“插件没装对”。
+- 插件出现在页面上要同时满足三件事：profile 的 `node_modules` 里有包、`package.json` 的 `dependencies` 里有 `link:` 条目、`dsh.profile.bundles` 里有同名条目。只往 `cordis.patch.yml` 里 `insert` 不够（重复 insert 还会让行落空）。核对办法：`window.__DSH_BOOT__.entries` 里有没有这一行。
+- 截图与交互走 `Tool/Sandbox/tools/cdp.mjs`：`start` 起一个独立 Edge（CDP 9333），`shot <url> <png> --width N`、`eval <url> <file.js>`。**传当前的同一个 URL** 才不会重新导航、把已经打开的面板丢掉；`eval` 里的脚本会被包进 `(async () => { ... })()`，所以必须自己 `return`，否则拿到 `{}`。改完模块要带 `?v=N`，并且 import 的查询串也要跟着改。
+- 这套换到无头 Edge 上时 `--dump-dom` 有时什么都不返回；改成用 CDP 打开 fixture 页再 `eval` 读 `#report` 更稳。
 
 ## 六、其他容易被误判的地方
 
