@@ -134,19 +134,31 @@
 - 带状态的"行组件"（内里有 `useState` 的那种）必须 `h(Row, props)` 挂上去，不能 `Row(props)` 直接调。直接调会把它的 hook 记进父组件的队列，只要调用位置在 `if`/`map` 的条件分支里，渲染次数一变就整棵树崩，报的还是 React 的压缩错误码（`#300`），从栈上看不出是这个原因。
 
 
-## 八、把一个有历史的仓库发布成独立仓库
+## 八、换掉前身历史，同时保住发布后的提交记录
 
-脱胎换骨的插件要公开时，历史会暴露来源。本地保留历史、远端只留一个提交的做法：
+脱胎换骨的插件要公开时，前身插件的提交会暴露来源。**不要**每次发布都把整棵树压成一个孤儿提交：那样远端没有历史，维护方也看不到改动脉络（这是被用户否掉的做法）。正确顺序是先把旧仓库归档，再在**改名那棵树**上重写历史，之后整仓推送。
 
 ```
-git checkout --orphan public        # 工作树与索引都保留，历史从头开始
-git add -A
-git commit -F .work/release-msg.txt # 一份写给陌生人的说明，不是 commit 日志合集
-git push https://x-access-token:<token>@github.com/<owner>/<repo>.git public:main
-git checkout master                 # 本地历史原地不动
+git mv D:\...\Plugin\OldName D:\...\Archive\Plugin\OldName   # 旧仓库整体移走，refs 全保留
+cd D:\...\Plugin\NewName
+git init -b master
+git fetch D:\...\Archive\Plugin\OldName refs/heads/master:refs/heads/incoming
+git checkout --detach <incoming~N>          # N = 改名之后还剩几个提交
+git checkout --orphan clean                 # 工作树与索引保留，历史从头开始
+git commit -F .git/ROOT_MSG                 # 根提交写成“这个项目从一开始就是这样”
+git rev-list --reverse "<改名提交>..incoming" | git cherry-pick --stdin
+git branch -M master
+git reflog expire --expire=now --all; git gc --prune=now
+git remote add origin https://github.com/<owner>/<repo>.git
+git push --force -u origin master:main      # 首次覆盖旧远端必须 --force
+git push --force origin refs/tags/<tag>
 ```
 
-- 令牌从 `git credential fill` 取，只放在变量里，命令输出用 `-replace` 抹掉再打印；不要写进 remote 配置。
-- `.gitignore` 里的临时目录（如 `.work/`）自动不进公开提交，但要先 `git ls-files` 数一遍，确认没有把草稿与附件带进去。
-- 公开分支留一个本地分支（`public`）当基线，下次发版 amend 或重建即可，master 继续攒真实历史。
-- README 要重写成读者视角：开篇讲它做什么，不讲它曾是什么；描述文件名、目录表、宿主组件取用方式都要按现状写，别留“以前的设置页”这类沿革句子。
+- 校验只有一条硬指标：新 HEAD 的树与旧 master 的树**完全相同**（`git rev-parse 'HEAD^{tree}'` 对拍，相等输出 `True`）。树不一致说明回放时丢了改动。
+- 再用 `git cat-file -e <前身某提交>` 确认返回 128 —— 前身对象已从新仓库物理消失，而不只是不可达。
+- `cherry-pick --stdin` 不认 `-q`，加了它 git 只打印用法、悄悄停在第一个提交。
+- 远端已有旧的压缩历史时，推送后要核对 `api.github.com` 的 default_branch 与 commit 数，并把标签**强制移动**到新的发布提交，GitHub Release 才会跟着走。
+- 令牌从 `git credential fill` 取，只放变量里，输出 `-replace` 抹掉；不要写进 remote 配置。裸请求不带 `username` 时 GCM 会弹账号窗口，所以先 `git config --global credential.https://github.com.username <用户名>`。
+- `.gitignore` 里的临时目录（如 `.work/`）自动不进提交，但仍要 `git ls-files` 数一遍，确认没有草稿与附件。
+- README 要重写成读者视角：开篇讲它做什么，不讲它曾是什么；文件名、目录表、宿主组件取用方式都按现状写，别留“以前的设置页”这类沿革句子。
+- 归档目录与被清理的历史都要写进项目的内部文档（`.work/docs/repo.md`）：旧仓库在哪、分手点是谁、回放了几个提交、树哈希怎么对过，下次接手才敢动。
